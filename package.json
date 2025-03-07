@@ -2,6 +2,7 @@
   "name": "commit-craft",
   "displayName": "Commit Craft",
   "description": "A VSCode extension to generate commit messages based on Git diffs using AI.",
+  "publisher": "MisbahSarfaraz",
   "version": "0.0.1",
   "engines": {
     "vscode": "^1.97.0"
