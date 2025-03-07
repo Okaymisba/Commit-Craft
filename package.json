@@ -31,6 +31,10 @@
       }
     ]
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Okaymisba/Commit-Craft"
+  },
   "scripts": {
     "lint": "eslint .",
     "pretest": "npm run lint",
