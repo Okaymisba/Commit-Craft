@@ -49,8 +49,6 @@
     "eslint": "^9.19.0"
   },
   "dependencies": {
-    "@xenova/transformers": "^2.17.2",
-    "axios": "^1.8.2",
-    "simple-git": "^3.27.0"
+    "axios": "^1.8.2"
   }
 }
