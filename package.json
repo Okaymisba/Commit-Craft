@@ -10,7 +10,7 @@
   "categories": [
     "Other"
   ],
-  "icon": "images/Commit.png",
+  "icon": "img/Commit.png",
   "activationEvents": [
     "onCommand:commit-helper.generate"
   ],
