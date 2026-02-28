@@ -13,7 +13,6 @@ async function generateCommitMessage(diff) {
         // a plain string, an array, or an object containing the message under
         // different keys (`message`, `commit`, `commit_message`, etc.).
         let data = response.data;
-        console.log("Generated commit message raw response:", data);
 
         if (Array.isArray(data)) {
             data = data[0];
@@ -40,7 +39,6 @@ async function setCommitMessage(message) {
         }
 
         if (!gitExtension.isActive) {
-            console.log("Activating Git extension...");
             await gitExtension.activate();
         }
 
@@ -50,8 +48,6 @@ async function setCommitMessage(message) {
             vscode.window.showErrorMessage("No Git repository found.");
             return;
         }
-
-        console.log("Setting commit message:", message);
 
         const gitRepo = git.repositories[0];
 
@@ -77,8 +73,6 @@ function activate(context) {
                 return;
             }
 
-            console.log("Fetching staged git diff...");
-
             exec("git diff --staged", { cwd: repoPath }, async (error, stdout, stderr) => {
                 if (error || stderr) {
                     vscode.window.showErrorMessage("Error getting staged git diff.");
@@ -92,10 +86,7 @@ function activate(context) {
                 }
 
                 try {
-                    console.log("Staged diff retrieved. Generating commit message...");
                     const commitMessage = await generateCommitMessage(stdout.trim());
-
-                    console.log("Generated commit message:", commitMessage);
 
                     await setCommitMessage(commitMessage);
                 } catch (error) {
