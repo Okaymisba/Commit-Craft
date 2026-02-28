@@ -5,11 +5,25 @@ const { exec } = require("child_process");
 async function generateCommitMessage(diff) {
     try {
         const response = await axios.post(
-            "https://known-meadowlark-okaymisba-50e4c01e.koyeb.app/generate-commit",
+            "https://incredible-orsola-okaymisba-e3cb46e8.koyeb.app/generate-commit",
             { diff }
         );
-        console.log("Generated commit message:", response.data);
-        return Array.isArray(response.data) ? response.data[0] : response.data;
+
+        // handle various shapes returned by the API. The backend may return
+        // a plain string, an array, or an object containing the message under
+        // different keys (`message`, `commit`, `commit_message`, etc.).
+        let data = response.data;
+        console.log("Generated commit message raw response:", data);
+
+        if (Array.isArray(data)) {
+            data = data[0];
+        }
+
+        if (typeof data === "object" && data !== null) {
+            data = data.message || data.commit || data.commit_message || JSON.stringify(data);
+        }
+
+        return String(data);
     } catch (error) {
         console.error("Failed to generate commit message:", error);
         throw new Error("Failed to generate commit message.");
@@ -96,4 +110,6 @@ function activate(context) {
 
 module.exports = {
     activate,
+    generateCommitMessage,
+    setCommitMessage,
 };
