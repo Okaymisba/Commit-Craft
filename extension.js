@@ -73,26 +73,67 @@ function activate(context) {
                 return;
             }
 
-            exec("git diff --staged", { cwd: repoPath }, async (error, stdout, stderr) => {
-                if (error || stderr) {
-                    vscode.window.showErrorMessage("Error getting staged git diff.");
-                    console.error("Git diff error:", error, stderr);
-                    return;
-                }
+            // set loading context so contributes menu shows the loading button
+            await vscode.commands.executeCommand('setContext', 'commitCraft.loading', true);
+            try {
+                await vscode.window.withProgress(
+                    {
+                        location: vscode.ProgressLocation.Notification,
+                        title: "Generating commit message",
+                        cancellable: false,
+                    },
+                    async (progress) => {
+                        progress.report({ message: "Fetching staged git diff..." });
 
-                if (!stdout.trim()) {
-                    vscode.window.showInformationMessage("No staged changes to commit.");
-                    return;
-                }
+                        const stagedDiff = await new Promise((resolve, reject) => {
+                            exec("git diff --staged", { cwd: repoPath }, (error, stdout, stderr) => {
+                                if (error || stderr) {
+                                    return reject({ error, stderr });
+                                }
+                                resolve(stdout || "");
+                            });
+                        }).catch((err) => {
+                            console.error("Git diff error:", err.error || err, err.stderr || "");
+                            vscode.window.showErrorMessage("Error getting staged git diff.");
+                            return null;
+                        });
 
-                try {
-                    const commitMessage = await generateCommitMessage(stdout.trim());
+                        if (!stagedDiff) return;
 
-                    await setCommitMessage(commitMessage);
-                } catch (error) {
-                    vscode.window.showErrorMessage(error.message);
-                }
-            });
+                        if (!stagedDiff.trim()) {
+                            vscode.window.showInformationMessage("No staged changes to commit.");
+                            return;
+                        }
+
+                        try {
+                            progress.report({ message: "Generating commit message..." });
+
+                            // Attempt to show a temporary placeholder in the commit input box
+                            try {
+                                const gitExtension = vscode.extensions.getExtension("vscode.git");
+                                if (gitExtension && !gitExtension.isActive) {
+                                    await gitExtension.activate();
+                                }
+                                const git = gitExtension && gitExtension.exports && gitExtension.exports.getAPI ? gitExtension.exports.getAPI(1) : null;
+                                const gitRepo = git && git.repositories && git.repositories[0];
+                                if (gitRepo) {
+                                    gitRepo.inputBox.value = "Generating commit message...";
+                                }
+                            } catch (e) {
+                                console.warn("Could not set temporary commit input value:", e.message || e);
+                            }
+
+                            const commitMessage = await generateCommitMessage(stagedDiff.trim());
+
+                            await setCommitMessage(commitMessage);
+                        } catch (error) {
+                            vscode.window.showErrorMessage(error.message || "Failed to generate commit message.");
+                        }
+                    }
+                );
+            } finally {
+                await vscode.commands.executeCommand('setContext', 'commitCraft.loading', false);
+            }
         }
     );
 

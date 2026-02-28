@@ -20,7 +20,12 @@
       "scm/title": [
         {
           "command": "commitMessageGenerator.generateCommitMessage",
-          "when": "scmProvider == git",
+          "when": "scmProvider == git && !commitCraft.loading",
+          "group": "navigation"
+        },
+        {
+          "command": "commitMessageGenerator.loading",
+          "when": "scmProvider == git && commitCraft.loading",
           "group": "navigation"
         }
       ]
@@ -30,6 +35,11 @@
         "command": "commitMessageGenerator.generateCommitMessage",
         "title": "🔨",
         "description": "Generate commit message"
+      },
+      {
+        "command": "commitMessageGenerator.loading",
+        "title": "⏳",
+        "description": "Generating commit message (in progress)"
       }
     ]
   },
